@@ -1,0 +1,1 @@
+FROM docker.io/postgres:18rc1-bookworm

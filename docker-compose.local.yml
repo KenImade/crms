@@ -1,0 +1,42 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./docker/local/postgres/Dockerfile
+    container_name: crms_postgres
+    restart: always
+    env_file:
+      - ./.envs/.env.development
+    ports:
+      - "5432:5432"
+    volumes:
+      - crms_postgres_data:/var/lib/postgresql/data
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/local/nestjs/Dockerfile
+    container_name: crms_server
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./.envs/.env.development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+      - ./logs/server:/app/logs
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    env_file:
+      - ./.envs/.env.development
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  crms_postgres_data:
