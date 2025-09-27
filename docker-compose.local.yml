@@ -1,8 +1,26 @@
 services:
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command: 
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    volumes:
+      - ./prometheus/config.yaml:/etc/prometheus/prometheus.yaml:ro
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
   postgres:
     build:
       context: .
-      dockerfile: ./docker/local/postgres/Dockerfile
+      dockerfile: ./infra/docker/local/postgres/Dockerfile
     container_name: crms_postgres
     restart: always
     env_file:
@@ -11,10 +29,10 @@ services:
       - "5432:5432"
     volumes:
       - crms_postgres_data:/var/lib/postgresql/data
-  server:
+  crms-api:
     build:
       context: .
-      dockerfile: ./docker/local/nestjs/Dockerfile
+      dockerfile: ./infra/docker/local/nestjs/Dockerfile
     container_name: crms_server
     restart: always
     depends_on:
@@ -40,3 +58,4 @@ services:
 
 volumes:
   crms_postgres_data:
+  grafana-data:

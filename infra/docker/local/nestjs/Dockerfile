@@ -4,7 +4,10 @@ WORKDIR /app
 
 COPY ./server/package*.json ./
 
-RUN npm install
+RUN npm install && \
+    rm -rf /tmp/* /var/tmp/*
+
+RUN chown -R node:node /app/*
 
 COPY ./server .
 

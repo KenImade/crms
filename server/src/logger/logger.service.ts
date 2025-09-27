@@ -3,12 +3,13 @@ import { createLogger, format, transports, Logger } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import * as path from 'path';
 import * as fs from 'fs';
+import { PrometheusService } from 'src/metrics/metrics.service';
 
 @Injectable()
 export class MyLoggerService implements LoggerService {
   private logger: Logger;
 
-  constructor() {
+  constructor(private readonly prometheus: PrometheusService) {
     const logDir = path.resolve(process.cwd(), 'logs');
 
     if (!fs.existsSync(logDir)) {
@@ -60,22 +61,27 @@ export class MyLoggerService implements LoggerService {
   }
 
   log(message: string, context?: string) {
+    this.prometheus.incrementLogCount('info');
     this.logger.info(message, { context });
   }
 
   error(message: string, trace?: string, context?: string) {
+    this.prometheus.incrementLogCount('error');
     this.logger.error(trace ? `${message}\n${trace}` : message, { context });
   }
 
   warn(message: string, context?: string) {
+    this.prometheus.incrementLogCount('warn');
     this.logger.warn(message, { context });
   }
 
   debug(message: string, context?: string) {
+    this.prometheus.incrementLogCount('debug');
     this.logger.debug(message, { context });
   }
 
   verbose(message: string, context?: string) {
+    this.prometheus.incrementLogCount('verbose');
     this.logger.verbose(message, { context });
   }
 }
