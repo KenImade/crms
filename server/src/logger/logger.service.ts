@@ -29,17 +29,42 @@ export class MyLoggerService implements LoggerService {
 
       console: new transports.Console({
         format: format.combine(
-          format.colorize(),
+          format.colorize({
+            all: true,
+            colors: { error: 'redBG white', warn: 'yellow', info: 'green' },
+          }),
           format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
           format.printf(({ timestamp, level, message, context }) => {
             return `${timestamp} [${level}]${context ? ' [' + context + ']' : ''} ${message}`;
           }),
         ),
       }),
+
+      exceptionHandlers: [
+        new DailyRotateFile({
+          filename: path.join(logDir, 'exceptions-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '30d',
+        }),
+      ],
+
+      rejectionHandlers: [
+        new DailyRotateFile({
+          filename: path.join(logDir, 'rejections-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '30d',
+        }),
+      ],
     };
 
     this.logger = createLogger({
-      level: 'info',
+      level:
+        process.env.LOG_LEVEL ||
+        (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
       levels: {
         error: 0,
         warn: 1,
