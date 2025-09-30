@@ -2,15 +2,19 @@ FROM node:18
 
 WORKDIR /app
 
+# Copy package.json for caching
 COPY ./server/package*.json ./
 
-RUN npm install && \
-    rm -rf /tmp/* /var/tmp/*
+# Install dependencies as root
+RUN npm install && rm -rf /tmp/* /var/tmp/*
 
-RUN chown -R node:node /app/*
-
+# Copy application code
 COPY ./server .
 
-RUN npm run build
+# Create log directory owned by node
+RUN mkdir -p logs && chown -R node:node logs
+
+# Switch to non-root user for running the app
+USER node
 
 CMD [ "npm", "run", "start:dev" ]

@@ -1,4 +1,10 @@
 services:
+  mailcatcher:
+    restart: on-failure
+    image: haravich/fake-smtp-server
+    ports:
+      - "1080:1080"
+      - "1025:1025"
   prometheus:
     image: prom/prometheus:v2.37.9
     container_name: prometheus
@@ -43,7 +49,7 @@ services:
       - "3000:3000"
     volumes:
       - ./server:/app
-      - ./logs/server:/app/logs
+      - ./logs/server:/app/logs/
   
   pgadmin:
     image: dpage/pgadmin4

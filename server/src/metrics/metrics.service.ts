@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as client from 'prom-client';
 
 @Injectable()
 export class PrometheusService {
   private readonly register: client.Registry;
   private readonly logCounter: client.Counter<string>;
+  private readonly logger = new Logger(PrometheusService.name);
 
   constructor() {
     this.register = new client.Registry();
