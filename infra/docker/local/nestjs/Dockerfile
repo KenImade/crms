@@ -9,10 +9,10 @@ COPY ./server/package*.json ./
 RUN npm install && rm -rf /tmp/* /var/tmp/*
 
 # Copy application code
-COPY ./server .
+COPY ./server/src/ ./src/
 
 # Create log directory owned by node
-RUN mkdir -p logs && chown -R node:node logs
+RUN mkdir -p ./logs && chown -R node:node ./logs
 
 # Switch to non-root user for running the app
 USER node

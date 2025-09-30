@@ -6,6 +6,8 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { DatabaseService } from './database/database.service';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
       load: [configuration],
       isGlobal: true,
     }),
+    DatabaseModule,
   ],
   controllers: [AppController],
-  providers: [Logger],
+  providers: [Logger, DatabaseService],
   exports: [Logger],
 })
 export class AppModule {
