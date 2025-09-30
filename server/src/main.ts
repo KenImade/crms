@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { WinstonModule } from 'nest-winston';
@@ -19,41 +20,29 @@ if (!fs.existsSync(logDir)) {
 
 const loggerInstance = winston.createLogger({
   transports: [
-    // new transports.DailyRotateFile({
-    //   filename: path.join(logDir, '%DATE%-error.log'),
-    //   level: 'error',
-    //   format: format.combine(format.timestamp(), format.json()),
-    //   datePattern: 'YYYY-MM-DD',
-    //   zippedArchive: false,
-    //   maxFiles: '30d',
-    // }),
-
-    // new transports.DailyRotateFile({
-    //   filename: path.join(logDir, `%DATE%-combined.log`),
-    //   level: logLevel,
-    //   format: format.combine(format.timestamp(), format.json()),
-    //   datePattern: 'YYYY-MM-DD',
-    //   zippedArchive: false,
-    //   maxFiles: '30d',
-    // }),
-
-    new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: logLevel,
+    new winston.transports.DailyRotateFile({
+      filename: path.join(logDir, '%DATE%-error.log'),
+      level: 'error',
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.json(),
       ),
-      options: { flags: 'a' },
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: false,
+      maxFiles: '30d',
     }),
 
-    new winston.transports.File({
-      filename: path.join(logDir, `combined.log`),
+    new winston.transports.DailyRotateFile({
+      filename: path.join(logDir, `%DATE%-combined.log`),
       level: logLevel,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.json(),
+        winston.format.colorize({ all: true }),
       ),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: false,
+      maxFiles: '30d',
     }),
 
     new winston.transports.Console({
@@ -72,7 +61,7 @@ const loggerInstance = winston.createLogger({
 loggerInstance.info('Logging initialized');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: WinstonModule.createLogger({ instance: loggerInstance }),
   });
 
@@ -85,7 +74,10 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api-docs', app, document);
+
+  app.setBaseViewsDir(path.join(__dirname, 'templates'));
+  app.setViewEngine('pug');
 
   await app.listen(process.env.PORT ?? 3000);
 }

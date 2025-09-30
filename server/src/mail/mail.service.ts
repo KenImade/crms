@@ -1,60 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { Injectable, Logger } from '@nestjs/common';
+import { MailerService, ISendMailOptions } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
-
-interface sendMailParamsInterface {
-  to: string;
-  from: string | undefined;
-  subject: string;
-  template: string;
-  context:
-    | {
-        [name: string]: any;
-      }
-    | undefined;
-}
 
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   constructor(
     private readonly mailerService: MailerService,
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
   ) {}
 
   async sendEmail(params: {
+    to: string;
     subject: string;
     template: string;
-    context: ISendMailOptions['context'];
-    receiverEmail: string;
+    context?: ISendMailOptions['context'];
   }) {
     const senderEmail = this.configService.get<string>('SMTP_FROM');
-    const receiverEmail = params.receiverEmail;
+    if (!params.to) {
+      throw new Error('No recipient email provided.');
+    }
+
+    const sendMailParams: ISendMailOptions = {
+      to: params.to,
+      from: senderEmail,
+      subject: params.subject,
+      template: params.template,
+      context: params.context,
+    };
+
     try {
-      if (!receiverEmail) {
-        throw new Error(
-          `No recipient email provided, please provide an email address`,
-        );
-      }
-
-      const sendMailParams: sendMailParamsInterface = {
-        to: receiverEmail,
-        from: senderEmail,
-        subject: params.subject,
-        template: params.template,
-        context: params.context,
-      };
-
       const response = await this.mailerService.sendMail(sendMailParams);
-
-      // this.logger.log(
-      //   `Email sent successfully with the following parameters: ${JSON.stringify(sendMailParams)}`,
-      //   response,
-      // );
+      this.logger.log(`Email sent successfully to ${params.to}`);
+      return response;
     } catch (error) {
-      // this.logger.error(
-      //   `Error while sending mail with the following parameters: ${JSON.stringify(params)}`,
-      //   error,
-      // );
+      this.logger.error(`Error sending email to ${params.to}`, error.stack);
+      throw error;
     }
   }
 }

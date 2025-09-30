@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { MailModule } from './mail/mail.module';
@@ -20,7 +19,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, Logger],
+  providers: [Logger],
   exports: [Logger],
 })
 export class AppModule {

@@ -1,23 +1,30 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { MailService } from './mail.service';
-import { ConfigService } from '@nestjs/config';
 
 @Controller('mail')
 export class MailController {
-  constructor(
-    private readonly mailService: MailService,
-    private configService: ConfigService,
-  ) {}
+  private readonly logger = new Logger(MailController.name);
 
-  @Get()
-  async sendMail() {
-    await this.mailService.sendEmail({
-      subject: 'Welcome to the CRMS APP',
-      template: 'signup-confirmation-template',
-      context: {
-        name: 'John Doe',
-      },
-      receiverEmail: 'test@example.com',
-    });
+  constructor(private readonly mailService: MailService) {}
+
+  @Get('send')
+  async sendMail(@Query('email') email: string, @Query('name') name: string) {
+    const recipient = email || 'test@example.com';
+    const recipientName = name || 'John Doe';
+
+    try {
+      this.logger.log(`Attempting to send email to ${recipient}`);
+      await this.mailService.sendEmail({
+        to: recipient,
+        subject: 'Welcome to the CRMS APP',
+        template: 'signup-confirmation-template',
+        context: { name: recipientName },
+      });
+      this.logger.log(`Email sent successfully to ${recipient}`);
+      return { message: 'Email sent successfully', to: recipient };
+    } catch (err) {
+      this.logger.error(`Failed to send email to ${recipient}`, err.stack);
+      throw err;
+    }
   }
 }

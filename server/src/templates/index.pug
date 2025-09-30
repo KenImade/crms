@@ -1,0 +1,33 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title= title
+    style.
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      a {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background 0.3s;
+      }
+      a:hover {
+        background: #0056b3;
+      }
+  body
+    h1 Welcome to the CRMS API
+    p Select where you want to go:
+    a(href=swaggerUrl, target="_blank") Swagger Documentation
+    a(href=githubUrl, target="_blank") GitHub Repository
